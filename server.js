@@ -4,7 +4,7 @@ const path = require("path");
 const fs = require("fs");
 //creating server using express()
 const app = express();
-const PORT = process.env.PORT ||1000 ;
+const PORT = process.env.PORT || 1000;
 //builtin middleware for parsing application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 
@@ -15,18 +15,27 @@ app.use(express.json());
 app.use(express.static("public"));
 
 //importing routes.js file 
-app.get("/", function (req ,res) {
-   res.sendFile(path.join(__dirname, 'public/index.html'));
-});  
-app.get("/notes", function (req, res) {
-    res.sendFile(path.join(__dirname, 'public/notes.html')); 
+app.get("/", function (req, res) {
+    res.sendFile(path.join(__dirname, 'public/index.html'));
 });
-app.get("/notes", function(req, res) {
-    res.sendFile(path.join(__dirname, '/db/db.json'));  
+app.get("/notes", function (req, res) {
+    res.sendFile(path.join(__dirname, 'public/notes.html'));
 });
 
-app.post("/api/notes", function(req, res) {
-    fs.readFile(path.join(__dirname, "/db/db.json"), "utf8", function(error, response) {
+app.get("/api/notes", function (req, res) {
+    console.log("hello");
+    fs.readFile(path.join(__dirname, "/db/db.json"), "utf8", function (error, response) {
+        
+        const notes = JSON.parse(response);
+        console.log("notes",notes);
+        res.json(notes);
+        
+    });
+   // res.sendFile(path.join(__dirname, '/db/db.json'));
+});
+
+app.post("/api/notes", function (req, res) {
+    fs.readFile(path.join(__dirname, "/db/db.json"), "utf8", function (error, response) {
         if (error) {
             console.log(error);
         }
@@ -40,25 +49,25 @@ app.post("/api/notes", function(req, res) {
         };
         notes.push(newNote);
         res.json(newNote);
-        fs.writeFile(path.join(__dirname, "/db/db.json"), JSON.stringify(notes, null, 2), function(err) {
+        fs.writeFile(path.join(__dirname, "/db/db.json"), JSON.stringify(notes, null, 2), function (err) {
             if (err) throw err;
         });
     });
 });
 
-// //delete Data 
-// app.delete('/api/notes/:id', (request, response) => {
+//delete Data 
+app.delete('/api/notes/:id', (request, response) => {
 
-//     const selectedNoteID = request.params.id;
-//     console.log(`Delete item with id: ${selectedNoteID}`);
+    const selectedNoteID = request.params.id;
+    console.log(`Delete item with id: ${selectedNoteID}`);
 
-//     // //remove item from notes array
-//     notes = notes.filter(note => note.id != selectedNoteID);
+//delet item from note list 
+    notes = notes.filter(note => note.id != selectedNoteID);
 
-//     response.end();
-// });
+    response.end();
+});
 
 //start server to listen 
 app.listen(PORT, () => {
-    console.log(`app is listening on ${PORT}.`);
+    console.log(`app is running on ${PORT}.`);
 });
