@@ -2,6 +2,7 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
+const { parse } = require("path");
 //creating server using express()
 const app = express();
 const PORT = process.env.PORT || 1000;
@@ -23,7 +24,6 @@ app.get("/notes", function (req, res) {
 });
 
 app.get("/api/notes", function (req, res) {
-    console.log("hello");
     fs.readFile(path.join(__dirname, "/db/db.json"), "utf8", function (error, response) {
         
         const notes = JSON.parse(response);
@@ -56,16 +56,24 @@ app.post("/api/notes", function (req, res) {
 });
 
 //delete Data 
-app.delete('/api/notes/:id', (request, response) => {
+ app.delete('/api/notes/:id', (req, res) => {
+    const noteId = parseInt(req.params.id);
+    fs.readFile(path.join(__dirname, "/db/db.json"), "utf8", function (error, response) {
+        if (error) {
+            console.log(error);
+        }
+        const notes = JSON.parse(response);
+        const newNoteArray=notes.filter((note) =>{
 
-    const selectedNoteID = request.params.id;
-    console.log(`Delete item with id: ${selectedNoteID}`);
-
-//delet item from note list 
-    notes = notes.filter(note => note.id != selectedNoteID);
-
-    response.end();
-});
+            return (note.id !== noteId)
+        })
+       
+        fs.writeFile(path.join(__dirname, "/db/db.json"), JSON.stringify(newNoteArray, null, 2), function (err) {
+            if (err) throw err;
+            res.end(); 
+        });
+        
+    })});
 
 //start server to listen 
 app.listen(PORT, () => {
